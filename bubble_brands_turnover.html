@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<script src="js/htmlwidgets-0.8/htmlwidgets.js"></script>
+<script src="js/d3-3.5.3/d3.js"></script>
+<script src="js/bubbles-binding-0.2/bubbles.js"></script>
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700,300italic&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
+<style>
+/*  #######   header and footer styling   ########*/
+
+body, h1, h2, h3, h4, h5, h6, .descr, td, table {
+   font-family: 'Open Sans Condensed', sans-serif;
+   background-color: white;
+   font-size: 18px;
+   margin:3px 4px 3px 5px;
+}
+
+#cite {
+    font-size: 0.9em; color: #B8B8B8; text-align: right; margin-top:1px; margin-right:10px; padding-bottom: 3px;
+}
+#cite a { text-decoration: none; color: #821122; }
+
+.descr {
+	z-index: 5;
+   font-size: 1em; color: #707070;
+}
+
+.tooltip {
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+
+    /* Position the tooltip */
+    position: absolute;
+    z-index: 1;
+}
+
+svg {
+	z-index: 0; /* behind */
+	position: absolute;
+    top: 27px;
+    left: 0;
+}
+svg text {
+  font: 0.8em 'Open Sans Condensed', sans-serif;
+}
+
+
+.blueText { 
+	color: #333366; 
+	font-weight: bold; 
+}
+.darkText { 
+	color: #2F343B; 
+	font-weight: bold; 
+}
+.redText { 
+	color: #71302F; 
+	font-weight: bold; 
+}
+.greenText { 
+	color: #336666; 
+	font-weight: bold; 
+}
+
+
+h1 {
+   font-size:2em;
+}
+
+h2 {
+		z-index: 7;
+   font-size:1.7em;
+   font-weight: 700;
+   line-height: 95%;
+   margin-bottom: 5px;
+}
+
+h3 {
+   font-size:1.2em
+}
+
+h4 {
+   font-size:1.1em;
+}
+
+h5 {
+   font-size:0.9em;
+}
+
+h6 {
+   font-size:0.8em;
+}
+
+
+a:visited {
+   color: rgb(50%, 0%, 50%);
+}
+
+
+@media screen and (max-width: 600px) {
+  body {
+    font-size: 16px;
+  }
+}
+</style>
+</head>
+<body style="background-color:white;">
+<html>
+  <body>
+    <h2>Les ventes de montres suisses</h2>
+    <div class="descr">Estimation des chiffres d’affaires des horlogers suisses en 2015. A titre de comparaison, les ventes de montres connectées d'<span class='blueText'>Apple</span> sont également représentées.<br>Les marques du même groupe sont de la même couleur: <span class='redText'>Swatch Group</span>, <span class='greenText'>Richemont</span>, <span class='darkText'>LVMH</span></div>
+    <h3>L'horlogerie suisse vs Apple</h3>
+    <div class="graphic">
+      <div id="htmlwidget-947468697e6c84e7c6c7" style="width:100%;height:900px;" class="bubbles html-widget"></div>
+      <script type="application/json" data-for="htmlwidget-947468697e6c84e7c6c7">{"x":{"value":[16,16,20,21,25,25,30,35,40,50,60,60,65,70,70,75,75,85,85,100,100,107,120,120,120,130,135,150,150,185,190,200,205,240,240,285,285,330,370,440,470,495,500,520,570,600,620,690,715,725,775,805,1060,1260,1320,2010,2060,4500,4900],"label":["","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","Frédérique Constant","Victorinox","Mido","Festina Group","Montblanc","Blancpain","Franck Muller","Bulgari","Breitling","Officine Panerai","Rado","Hublot","Vacheron Constantin","Piaget","Chopard","Harry Winston*","Breguet","Jaeger-LeCoultre","Swatch","TAG Heuer","IWC","Audemars Piguet","Tissot","Longines","Patek Philippe","Cartier","Omega","Apple","Rolex"],"tooltip":["Ralph Lauren: 16 CHF millions","Dunhill: 16 CHF millions","Chronoswiss: 20 CHF millions","Dior: 21 CHF millions","F.P.Journe: 25 CHF millions","De Witt: 25 CHF millions","Edox : 30 CHF millions","Jaquet Droz: 35 CHF millions","Technomarine: 40 CHF millions","Bell & Ross: 50 CHF millions","Mondaine: 60 CHF millions","Oris: 60 CHF millions","De Grisogono: 65 CHF millions","Hamilton: 70 CHF millions","Roger Dubuis: 70 CHF millions","Ernest Borel: 75 CHF millions","Titoni : 75 CHF millions","Certina: 85 CHF millions","Glashütte Original: 85 CHF millions","Maurice Lacroix: 100 CHF millions","C.F.Bucherer: 100 CHF millions","Van Cleef&Arpels: 107 CHF millions","Raymond Weil: 120 CHF millions","Parmigiani: 120 CHF millions","Chanel: 120 CHF millions","Ck watch: 130 CHF millions","Baume & Mercier : 135 CHF millions","Zenith: 150 CHF millions","Lange & Söhne: 150 CHF millions","Richard Mille: 185 CHF millions","Frédérique Constant: 190 CHF millions","Victorinox: 200 CHF millions","Mido: 205 CHF millions","Festina Group: 240 CHF millions","Montblanc: 240 CHF millions","Blancpain: 285 CHF millions","Franck Muller: 285 CHF millions","Bulgari: 330 CHF millions","Breitling: 370 CHF millions","Officine Panerai: 440 CHF millions","Rado: 470 CHF millions","Hublot: 495 CHF millions","Vacheron Constantin: 500 CHF millions","Piaget: 520 CHF millions","Chopard: 570 CHF millions","Harry Winston*: 600 CHF millions","Breguet: 620 CHF millions","Jaeger-LeCoultre: 690 CHF millions","Swatch: 715 CHF millions","TAG Heuer: 725 CHF millions","IWC: 775 CHF millions","Audemars Piguet: 805 CHF millions","Tissot: 1060 CHF millions","Longines: 1260 CHF millions","Patek Philippe: 1320 CHF millions","Cartier: 2010 CHF millions","Omega: 2060 CHF millions","Apple: 4500 CHF millions","Rolex: 4900 CHF millions"],"color":["#336666","#336666","#c87963","#c87c66","#c8836b","#c88069","#c7866e","#71302F","#c78971","#c78c73","#c79178","#c78e76","#c8957b","#71302F","#336666","#c89a7f","#c8977e","#71302F","#71302F","#c89f84","#c89d82","#336666","#caa88b","#c9a589","#c9a287","#cbaa8c","#336666","#2F343B","#336666","#cbac8e","#ccb091","#cdb292","#71302F","#cfb695","#ceb494","#71302F","#d1b997","#2F343B","#d2bb99","#336666","#71302F","#2F343B","#336666","#336666","#d4be9a","#71302F","#71302F","#336666","#71302F","#2F343B","#336666","#d8c39d","#71302F","#71302F","#d9c49e","#336666","#71302F","#333366","#e1cba0"],"textColor":["#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6","#e6e6e6"]},"evals":[],"jsHooks":[]}</script>
+    </div>
+    <script type="text/javascript" src="https://www.swissinfo.ch/static/Themes/basic/js/vendor/iframeResizer.contentWindow.3.5.3.min.js"></script>
+  </body>
+</html>
+</body>
+</html>

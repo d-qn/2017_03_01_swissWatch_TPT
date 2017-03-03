@@ -1,0 +1,84 @@
+---
+title: ""
+author: "Duc-Quang Nguyen | swissinfo.ch"
+date: " 2016"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 3
+    theme: simplex
+---
+
+```{r setup, include=FALSE}
+data.file <- "input/swiss_watch_turnover.csv"
+threshold.label <- 190
+
+library(readr)
+library(tidyr)
+library(dplyr)
+library(magrittr)
+library(countrycode)
+library(ggplot2)
+library(scales)
+library(swiMap)
+library(swiTheme)
+library(forcats)
+#library(colortools) # to get complementary colors
+
+### Interactive 
+library(htmltools)
+library(swiRcharts)
+library(rCharts)
+library(bubbles)
+require(viridis)
+```
+
+```{r load data}
+data.read <- read.csv(data.file, stringsAsFactors = F) %>% rename(turnover = `Chiffre.d.affaires`)
+
+data.read$Groupe <- ifelse(data.read$Groupe == "", data.read$Marques, data.read$Groupe)
+table(data.read$Groupe)
+group2col <- unique(data.read$Groupe)
+length(group2col)
+
+# #E3CDA1,#BDB198, #C87963 input with 33 steps into 
+# http://gka.github.io/palettes/#colors=#E3CDA1,#BDB198,#C87963|steps=33|bez=1|coL=1
+names(group2col) <- c('#e3cda1','#e1cba0','#dec99f','#dbc69f','#d9c49e','#d8c39d','#d6c09b','#d4be9a','#d2bb99','#d1b997','#cfb695','#ceb494','#cdb292','#ccb091','#cbac8e','#cbaa8c','#caa88b','#c9a589','#c9a287','#c89f84','#c89d82','#c89a7f','#c8977e','#c8957b','#c79178','#c78e76','#c78c73','#c78971','#c7866e','#c8836b','#c88069','#c87c66','#c87963')
+
+# manually set some colors
+names(group2col)[(group2col == 'Apple')] <- '#333366'
+names(group2col)[(group2col == 'LVMH')] <- '#2F343B'
+names(group2col)[(group2col == 'Swatch Group')] <- '#71302F'
+names(group2col)[(group2col == 'Richemont')] <- '#336666'
+
+dd <- data.read
+dd$col <- names(group2col)[match(dd$Groupe, group2col)]
+# get complementary colors
+#txtcol<- sapply(dd$col, complementary, plot = T)
+#dd$txtcol <- txtcol[2,]
+dd$label <- ifelse(dd$turnover >= threshold.label, dd$Marques, "")
+dd %<>% arrange(turnover)
+```
+
+```{r bubbles}
+dd %>% filter(Marques != "Apple")
+
+ bb <- bubbles(value = dd$turnover, 
+               dd$label, tooltip = paste0(dd$Marques, ": ", dd$turnover, " CHF millions"), 
+               color = dd$col, textColor = "#e6e6e6", height = 900, width = "100%")
+#bb$sizingPolicy$defaultWidth  <- "100%"
+  save_html(
+    tags$html(
+      tags$head(includeHTML("styles.html")),
+      tags$body(    
+        #h2(txt["main.title",lang]),
+        h2("Les ventes de montres suisses"),
+        #div(class = "descr", HTML(txt["descr",lang])),
+        div(class = "descr", HTML("Estimation des chiffres d’affaires des horlogers suisses en 2015. A titre de comparaison, les ventes de montres connectées d'<span class='blueText'>Apple</span> sont également représentées.<br>Les marques du même groupe sont de la même couleur: <span class='redText'>Swatch Group</span>, <span class='greenText'>Richemont</span>, <span class='darkText'>LVMH</span>")),
+        h3("L'horlogerie suisse vs Apple"),
+        div(class="graphic", bb),
+        #div(id = "cite", HTML(footer)),
+       HTML(iframeresizer)
+      )), file = "bubble_brands_turnover.html", libdir = "js")  
+  
+```

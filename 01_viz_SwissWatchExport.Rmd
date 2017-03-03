@@ -1,0 +1,199 @@
+---
+title: "Exportations horlogères de la Suisse"
+author: "Duc-Quang Nguyen | swissinfo.ch"
+date: " 2017"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 3
+    theme: simplex
+---
+
+## Données
+
+* https://www.swiss-impex.admin.ch
+* Select all years
+* export only
+* Cat 91: horlogerie
+* Choose English (top right)
+* Remove % change an quantity
+
+
+```{r setup, include=FALSE}
+data.file <- "input/swiss_impex_watch_91_1988_2016_code.xlsx"
+data2.file <- "input/swiss_impex_watch_91_1988_2016.xlsx"
+
+translation.file <- "input/Swiss watch export - stacked area chart - Sheet1.csv"
+
+hack <- data.frame(
+  code = c("XA", "XK", "XC", "XL"),
+  name = c('Canary Islands', 'Kosovo', 'Ceuta', 'Melilla'),
+  continent = c('Europe', 'Europe', 'Europe', 'Europe')
+)
+
+library(readxl)
+library(readr)
+library(tidyr)
+library(dplyr)
+library(magrittr)
+library(countrycode)
+library(ggplot2)
+library(scales)
+library(swiMap)
+library(swiTheme)
+library(RColorBrewer)
+
+### Interactive 
+library(htmltools)
+library(swiRcharts)
+library(highcharter)
+```
+
+
+```{r load}
+txt <- loadTranslation(translation.file)
+
+data.read <- read_excel(data.file, skip = 3)
+data2.read <- read_excel(data2.file, skip = 3)
+colnames(data.read) <- c('year', 'country', 'export')
+colnames(data2.read) <- c('year', 'country', 'export')
+
+cleanUp <- function(df) {
+  # remove the triple * for the last year
+  df$year <- gsub("\\*\\*\\*", "", df$year)
+  df$year <- as.numeric(df$year)
+  # remove NA rows
+  na.idx<- apply(df, 1, function(l) all(is.na(l)))
+  df <- df[-which(na.idx),] 
+  df$country <- gsub("^ +", "", df$country)
+  df
+}
+
+data.read <- cleanUp(data.read) %>% rename(iso2 = country)
+data2.read <- cleanUp(data2.read) 
+
+data <- left_join(data2.read, data.read)
+
+# get some regions
+data$label <- countrycode(data$iso2, "iso2c", "country.name")
+data$continent <- countrycode(data$iso2, "iso2c", "continent")
+
+tt <- data[which(is.na(data$continent)), c('iso2', "label", "country", "continent")]
+tt[!duplicated(tt),]
+
+```
+
+```{r wrangle}
+# get top 10 countries
+top.iso2 <- data %>% group_by(iso2) %>% summarise(tot = sum(export)) %>% arrange(desc(tot)) %>% select(iso2) %>% head(10) %>% unlist(use.names = F)
+names(top.iso2) <- countrycode(top.iso2, "iso2c", "continent")
+
+data$group <- ifelse(data$iso2 %in% top.iso2, data$iso2, data$continent)
+# hack for NA group/continent, assign Europe
+data[which(is.na(data$group)), 'group'] <- 'Europe'
+
+#aggregate data by year and group
+dat <- data %>% group_by(year, group) %>% summarise(export = sum(export, na.rm = T)) %>% ungroup()
+
+dat$continent <- dat$group
+dat[which(nchar(dat$continent) == 2),'continent'] <- 
+  countrycode(dat[which(nchar(dat$continent) == 2),'continent'] %>% unlist(use.names = F), "iso2c", "continent")
+
+continents.data <- dat %>% group_by(continent) %>% summarise(tot = sum(export)) %>%
+  arrange(desc(tot)) 
+
+continents <- continents.data %>% select(continent) %>% unlist(use.names = F)
+
+```
+
+
+```{r viz stacked area}
+## Complicated way to groups by continent and export... 
+# order group by continent and overall export
+groups <- data.frame(group = unique(dat$group))
+groups$continent <- groups$group
+groups$isCountry <- ifelse(nchar(as.character(groups$group)) == 2, T, F)
+groups$continent[which(groups$isCountry)] <-   countrycode(as.character(groups$continent[which(groups$isCountry)]), "iso2c", "continent")
+groups$rank <- match(as.character(groups$continent), continents)
+
+country.rank <- dat %>% group_by(group) %>% summarise(tot = sum(export)) %>% 
+  ungroup %>% arrange(desc(tot)) %>% select(group) %>% unlist(use.names = F) %>% as.character()
+groups$countryrank <- match(groups$group, country.rank)
+
+groups %<>% arrange(rank, desc(isCountry), countryrank)
+# assign colors
+rank2pal <- structure(unique(groups$rank), names = c("Reds", "PuBu", "Greens", "Purples", "Greys"))
+# assign colors to groups using different colorBrewever palette
+groups$color <- do.call(c, by(groups, groups$rank, function(rr) {
+  rk <- rr[1,'rank']
+  brewer_pal(palette = names(rank2pal)[rk])(nrow(rr)+1)[-1]
+}))
+
+# sort groups
+dat$group <- factor(dat$group, levels = rev(as.character(groups$group)))
+dat$export <- dat$export / 10^6
+#write.csv(group.ordered, file = "~/Desktop/translation_tmp.csv", row.names = F)
+
+for (lang in colnames(txt)) {
+  dd <- dat  
+  
+  dd$label <- txt[as.character(dd$group), lang]
+  # sort 
+  dd$label <- factor(dd$label, levels = rev(txt[as.character(groups$group), lang]))
+  
+  footer <- paste0(
+    txt['source', lang], ": ", txt['source.name', lang], " | ",
+    htmlLink("https://twitter.com/duc_qn", '@duc_qn'),  " | ",           
+    htmlLink("http://www.swissinfo.ch", 'swissinfo.ch')               
+  )
+    
+    
+  hc <- hchart(dd, "areaspline", hcaes(x = year, y = export, group = label), 
+         stacking = T, marker = list(enabled = F, states = list(hover = list(enabled = F))), lineWidth = 0) %>%
+  hc_add_theme(hc_theme_swi) %>%
+  hc_yAxis(title = list(text = ""), #txt["y.title", lang]),#, align = "top", rotation = 0), 
+           tickAmount = 6,
+          minorGridLineWidth = 0,
+           opposite = ifelse(lang == "AR", T, F),
+           labels = list(useHTML =T, 
+            formatter = JS("function() { return (this.value / 1000);}")),
+            style = list(fontSize = "12px")) %>% 
+  hc_xAxis(title = list(text = ""), lineWidth = 0, tickLength = 3) %>%
+  hc_legend(floating = T, x = 30, y = 40, title = list(text = txt["legend.key", lang]),
+            verticalAlign = "top", width = 300, align = "left", reversed = T, itemDistance = 10) %>%
+  hc_colors(colors = rev(groups$color)) %>% 
+    hc_size(height = 560) %>%
+    hc_chart(marginTop = 15)
+  
+  hc2 <- hc %>%  hc_tooltip(
+      borderRadius = 10, useHTML = T,
+      pointFormat = paste0("<h5>{series.name}</h5><small>{point.y:,.0f} ", txt["tp.1", lang], "</small>")
+  ) %>%
+  hc_subtitle(align = "left", floating = T, text = txt["y.title", lang], x = 18, y = 5)
+
+  
+  save_html(
+    tags$html(
+      tags$head(includeHTML(style_swi_highcharter())),
+      tags$body(    
+        tags$h2(txt['h3', lang]),
+        div(class = "descr", HTML(txt['descr', lang])),
+        tags$h3(txt['main.title', lang]),
+        div(class="graphic", hc2),
+        div(id = "cite", HTML(footer)),
+        HTML(iframeresizer)
+      )
+    ), file = paste0("Swiss_watch_export_stackedArea_", lang, ".html"), libdir = "js"
+  )     
+  
+    
+    
+}
+
+
+
+
+  
+
+
+```
